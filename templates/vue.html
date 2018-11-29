@@ -1,0 +1,63 @@
+<!doctype html>
+{% raw %}
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.16/vue.js"></script>
+  <style>
+    .danger {
+      color: white;
+      background-color: red;
+    }
+
+    .title {
+      font-size: 200%;
+    }
+  </style>
+  <title>Document</title>
+
+</head>
+
+<body>
+
+  <div id="app">
+    <p v-bind:class="{'danger': m.isDanger, 'title': m.content=='hello'}" v-for="m in messages">
+      {{m.content}}
+    </p>
+
+    内容：<input type='text' v-model='inputContent' />
+    <input type='checkbox' v-model='isDanger' />危险
+    <button @click="addMessage">添加</button>
+  </div>
+
+  <script>
+    var app = new Vue({
+      el: '#app',
+      data: {
+        isDanger: true,
+        inputContent: '',
+        messages: [
+          { content: 'hello', isDanger: false },
+          { content: 'world', isDanger: true }
+        ]
+      },
+      methods: {
+        addMessage() {
+          let newMessage = {
+            content: this.inputContent,
+            isDanger: this.isDanger
+          }
+          this.messages.push(newMessage)
+          this.inputContent = ''
+        }
+      }
+    });
+
+  </script>
+</body>
+{% endraw %}
+
+</html>

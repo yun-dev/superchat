@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+{% raw %}
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.css" rel="stylesheet"> -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.16/vue.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
+
+  <link rel="stylesheet" href="/static/bulma.css">
+  <link rel="stylesheet" href="/static/fa/css/all.css">
+  <style>
+    html {
+      overflow: hidden;
+    }
+    #app {
+      /* height: 100vh; */
+      width: 100%;
+    }
+    #chat {
+      /* viewport 100% vh, vw */
+      height: 99vh;
+      /* min-height: 400px; */
+      position: relative;
+    }
+    
+
+    #chat .messages {
+      position: absolute;
+      bottom: 150px;
+      top:0;
+      width: 100%;
+      /* height: 100%; */
+      overflow: scroll;
+    }
+
+    .message_box {
+      margin: 8px 20px;
+    }
+
+    .message_box .message-body {
+      padding: 5px 20px;
+    }
+
+    #login {
+    }
+
+
+    #chat .input_panel {
+      position: absolute;
+      width: 100%;
+      height: 150px;
+      bottom: 0px;
+      background-color: white;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .input_panel .btnSend {
+      height: 100%;
+    }
+    
+    .login_panel {
+      width: 300px;
+      margin: 0 auto;
+    }
+
+
+  </style>
+  <title>聊天</title>
+</head>
+
+<body>
+  <div id="app">
+    <section id='login' class="hero is-fullheight is-info" v-if="!chating">
+      <div class="hero-head"></div>
+      <div class="hero-body ">
+        <div class="login_panel has-text-centered">
+          <div class="box ">
+            <h1 class="title has-text-black is-4 has-text-left ">请输入用户名</h1>
+            <hr>
+            <div class="field">
+              <p class="control has-icons-left">
+                <input type="text" class="input" v-model='username' @keypress.enter="enter_chat">
+                <span class="icon is-small is-left">
+                  <i class="fas fa-user"></i>
+                </span>
+              </p>
+            </div>
+            <p>
+              <a class="button is-primary is-fullwidth" @click='enter_chat'>
+                <span>进入聊天</span>
+                <span class="icon is-small">
+                  <i class="fas fa-arrow-right"></i>
+                </span>
+              </a>
+            </p>
+          </div>
+        </div>
+
+        <div class="hero-foot"></div>
+    </section>
+
+    <div id='chat' class="has-background-light" v-if="chating">
+      <div class="messages has-background-white">
+
+        <div class="message_box" v-for='m in messages'>
+          <article class="message is-info">
+            <div class="message-body">
+              <p class="who has-text-grey">{{m.who}}</p>
+              <div class="content">{{m.content}}</div>
+            </div>
+          </article>
+        </div>
+        <span id='messages_bottom'></span>
+      </div>
+      <div class="input_panel">
+        <div class="columns is-mobile">
+          <div class="column">
+            <textarea class="textarea" v-model='inputMessage' @input="onInputMessageChanged" @keypress.enter.ctrl='send_message'></textarea>
+          </div>
+          <div class="column is-narrow">
+            <button class="is-primary button btnSend is-medium" @click='send_message'>&nbsp; &nbsp; 发送 &nbsp; &nbsp;</button>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+
+
+  </div>
+
+  <script>
+
+    let socket = io('/')
+    socket.on('chat', function (msg) {
+      console.log('收到服务器消息：', msg)
+      vue.messages.push(msg)
+      setTimeout(function () {
+        document.getElementById('messages_bottom').scrollIntoView()
+      }, 0)
+
+    })
+
+    let vue = new Vue({
+      el: '#app',
+      data: {
+        username: '',
+        messages: [],
+        inputMessage: '',
+        chating: false,
+      },
+      methods: {
+        usernameChange() {
+          console.log('username=', this.username)
+        },
+        onInputMessageChanged() {
+          console.log('changed')
+          this.inputMessage = this.inputMessage.replace(/\:\)/g, '😀')
+        },
+        enter_chat() {
+          if (this.username.trim() !== '') {
+            this.username = this.username.trim()
+            this.chating = true
+
+          } else {
+            alert('请输入有效的名字')
+          }
+        },
+        send_message() {
+          // :) 
+          if (this.inputMessage.trim() === '') {
+            alert('你好像没输入任何内容')
+            return
+          }
+          let content = this.inputMessage
+
+          let msg = {
+            who: this.username,
+            content: content
+          }
+
+          console.log(this.inputMessage)
+          this.inputMessage = ''
+
+          socket.emit('chat', msg)
+        }
+      }
+    })
+  </script>
+
+</body>
+
+{% endraw %}
+
+</html>
